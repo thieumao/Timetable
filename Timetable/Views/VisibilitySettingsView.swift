@@ -10,6 +10,7 @@ import SwiftUI
 struct VisibilitySettingsView: View {
     @Environment(\.dismiss) var dismiss
     @ObservedObject var viewModel: TimetableViewModel
+    @State private var showingPeriodSettings = false
     
     var body: some View {
         NavigationView {
@@ -36,6 +37,18 @@ struct VisibilitySettingsView: View {
                     )) {
                         Text("show_period_label".localized)
                     }
+                    
+                    Button(action: {
+                        showingPeriodSettings = true
+                    }) {
+                        HStack {
+                            Text("manage_periods".localized)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
                 }
                 
                 Section(header: Text("visibility_settings".localized)) {
@@ -56,16 +69,21 @@ struct VisibilitySettingsView: View {
                 
                 Section(header: Text("period".localized)) {
                     // Periods visibility
-                    ForEach(1...viewModel.maxPeriods, id: \.self) { period in
+                    ForEach(viewModel.periodStore.periods, id: \.id) { period in
                         Toggle(isOn: Binding(
-                            get: { !viewModel.isPeriodHidden(period) },
+                            get: { !viewModel.isPeriodHidden(period.number) },
                             set: { _ in
                                 withAnimation {
-                                    viewModel.togglePeriodVisibility(period)
+                                    viewModel.togglePeriodVisibility(period.number)
                                 }
                             }
                         )) {
-                            Text("period_format".localized.replacingOccurrences(of: "%d", with: "\(period)"))
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("period_format".localized.replacingOccurrences(of: "%d", with: "\(period.number)"))
+                                Text(period.timeDisplay)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
                         }
                     }
                 }
@@ -78,6 +96,9 @@ struct VisibilitySettingsView: View {
                         dismiss()
                     }
                 }
+            }
+            .sheet(isPresented: $showingPeriodSettings) {
+                PeriodSettingsView(periodStore: viewModel.periodStore)
             }
         }
     }

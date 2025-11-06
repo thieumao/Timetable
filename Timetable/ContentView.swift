@@ -48,17 +48,25 @@ struct ContentView: View {
                         HStack(spacing: 0) {
                             // Period indicator
                             if !viewModel.isPeriodColumnHidden {
-                                Text("\(period)")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                    .frame(width: 60)
-                                    .padding(.vertical, 4)
-                                    .contentShape(Rectangle())
-                                    .onLongPressGesture {
-                                        withAnimation {
-                                            viewModel.togglePeriodVisibility(period)
-                                        }
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("\(period)")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                    
+                                    if let periodTime = viewModel.getPeriodTime(for: period) {
+                                        Text(periodTime)
+                                            .font(.system(size: 9))
+                                            .foregroundColor(.secondary.opacity(0.7))
                                     }
+                                }
+                                .frame(width: 60)
+                                .padding(.vertical, 4)
+                                .contentShape(Rectangle())
+                                .onLongPressGesture {
+                                    withAnimation {
+                                        viewModel.togglePeriodVisibility(period)
+                                    }
+                                }
                             }
                             
                             // Day cells
@@ -77,9 +85,10 @@ struct ContentView: View {
                                             }
                                         }
                                 } else {
+                                    let periodTime = viewModel.getPeriodTime(for: period)
                                     VStack(spacing: 2) {
                                         ForEach(subjectsForCell) { subject in
-                                            TimetableCell(subject: subject, showPeriodLabel: viewModel.showPeriodLabel)
+                                            TimetableCell(subject: subject, showPeriodLabel: viewModel.showPeriodLabel, periodTime: periodTime)
                                                 .frame(height: 60)
                                                 .contentShape(Rectangle())
                                                 .onTapGesture {
@@ -162,6 +171,7 @@ struct ContentView: View {
             .sheet(isPresented: $viewModel.showingAddSubject) {
                 SubjectEditView(
                     scheduleStore: viewModel.store,
+                    periodStore: viewModel.periodStore,
                     initialDay: viewModel.initialDayForNewSubject,
                     initialPeriod: viewModel.initialPeriodForNewSubject
                 )
@@ -172,6 +182,7 @@ struct ContentView: View {
             .sheet(item: $viewModel.selectedSubject) { subject in
                 SubjectEditView(
                     scheduleStore: viewModel.store,
+                    periodStore: viewModel.periodStore,
                     subject: subject
                 )
                 .onDisappear {

@@ -49,3 +49,14 @@
 "hide_period" = "Hide Period %d";
 "show_period" = "Show Period %d";
 "show_period_label" = "Show Period Label";
+"period_settings" = "Period Settings";
+"manage_periods" = "Manage Periods";
+"add_period" = "Add Period";
+"edit_period" = "Edit Period";
+"period_info" = "Period Information";
+"period_number" = "Period Number";
+"start_time" = "Start Time";
+"end_time" = "End Time";
+"delete_period" = "Delete Period";
+"no_periods" = "No periods";
+"none" = "None";

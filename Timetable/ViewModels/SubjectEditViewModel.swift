@@ -15,9 +15,14 @@ class SubjectEditViewModel: ObservableObject {
     @Published var selectedColor: SubjectColor
     
     private let scheduleStore: ScheduleStore
+    let periodStore: PeriodStore
     let subjectToEdit: Subject?
     let initialDay: Int?
     let initialPeriod: Int?
+    
+    var availablePeriods: [Period] {
+        periodStore.periods.sorted { $0.number < $1.number }
+    }
     
     var isSaveEnabled: Bool {
         !name.isEmpty
@@ -31,8 +36,9 @@ class SubjectEditViewModel: ObservableObject {
         isEditMode ? "edit_subject".localized : "add_subject".localized
     }
     
-    init(scheduleStore: ScheduleStore, subject: Subject? = nil, initialDay: Int? = nil, initialPeriod: Int? = nil) {
+    init(scheduleStore: ScheduleStore, periodStore: PeriodStore, subject: Subject? = nil, initialDay: Int? = nil, initialPeriod: Int? = nil) {
         self.scheduleStore = scheduleStore
+        self.periodStore = periodStore
         self.subjectToEdit = subject
         self.initialDay = initialDay
         self.initialPeriod = initialPeriod

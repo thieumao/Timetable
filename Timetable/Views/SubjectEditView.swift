@@ -12,9 +12,10 @@ struct SubjectEditView: View {
     @StateObject private var viewModel: SubjectEditViewModel
     @ObservedObject private var localizationManager = LocalizationManager.shared
     
-    init(scheduleStore: ScheduleStore, subject: Subject? = nil, initialDay: Int? = nil, initialPeriod: Int? = nil) {
+    init(scheduleStore: ScheduleStore, periodStore: PeriodStore, subject: Subject? = nil, initialDay: Int? = nil, initialPeriod: Int? = nil) {
         _viewModel = StateObject(wrappedValue: SubjectEditViewModel(
             scheduleStore: scheduleStore,
+            periodStore: periodStore,
             subject: subject,
             initialDay: initialDay,
             initialPeriod: initialPeriod
@@ -39,11 +40,30 @@ struct SubjectEditView: View {
                 }
                 
                 Section(header: Text("period".localized)) {
-                    Stepper(value: Binding(
-                        get: { viewModel.period ?? 1 },
-                        set: { viewModel.period = $0 }
-                    ), in: 1...12) {
-                        Text("period_label".localized.replacingOccurrences(of: "%d", with: "\(viewModel.period ?? 1)"))
+                    if viewModel.availablePeriods.isEmpty {
+                        Text("no_periods".localized)
+                            .foregroundColor(.secondary)
+                    } else {
+                        Picker("period".localized, selection: Binding(
+                            get: { 
+                                if let period = viewModel.period {
+                                    return period
+                                }
+                                return viewModel.availablePeriods.first?.number ?? 0
+                            },
+                            set: { newValue in
+                                if newValue == 0 {
+                                    viewModel.period = nil
+                                } else {
+                                    viewModel.period = newValue
+                                }
+                            }
+                        )) {
+                            Text("none".localized).tag(0)
+                            ForEach(viewModel.availablePeriods, id: \.number) { period in
+                                Text("\(period.number) - \(period.timeDisplay)").tag(period.number)
+                            }
+                        }
                     }
                 }
                 

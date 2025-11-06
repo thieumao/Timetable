@@ -49,3 +49,14 @@
 "hide_period" = "Ẩn tiết %d";
 "show_period" = "Hiện tiết %d";
 "show_period_label" = "Hiện nhãn tiết";
+"period_settings" = "Cài đặt tiết học";
+"manage_periods" = "Quản lý tiết học";
+"add_period" = "Thêm tiết";
+"edit_period" = "Chỉnh sửa tiết";
+"period_info" = "Thông tin tiết";
+"period_number" = "Số tiết";
+"start_time" = "Giờ bắt đầu";
+"end_time" = "Giờ kết thúc";
+"delete_period" = "Xóa tiết";
+"no_periods" = "Chưa có tiết nào";
+"none" = "Không có";

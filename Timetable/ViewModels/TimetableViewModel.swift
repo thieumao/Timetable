@@ -20,7 +20,7 @@ class TimetableViewModel: ObservableObject {
     @Published var showPeriodLabel: Bool = false
     
     private let scheduleStore: ScheduleStore
-    let maxPeriods = 12
+    let periodStore: PeriodStore
     
     private var cancellables = Set<AnyCancellable>()
     private let hiddenDaysKey = "timetable_hidden_days"
@@ -39,14 +39,22 @@ class TimetableViewModel: ObservableObject {
         scheduleStore.subjects
     }
     
-    init(scheduleStore: ScheduleStore = ScheduleStore()) {
+    init(scheduleStore: ScheduleStore = ScheduleStore(), periodStore: PeriodStore = PeriodStore()) {
         self.scheduleStore = scheduleStore
+        self.periodStore = periodStore
         
         // Load hidden preferences
         loadHiddenPreferences()
         
         // Observe scheduleStore changes to trigger view updates
         scheduleStore.$subjects
+            .sink { [weak self] _ in
+                self?.objectWillChange.send()
+            }
+            .store(in: &cancellables)
+        
+        // Observe periodStore changes to trigger view updates
+        periodStore.$periods
             .sink { [weak self] _ in
                 self?.objectWillChange.send()
             }
@@ -97,7 +105,7 @@ class TimetableViewModel: ObservableObject {
     }
     
     var visiblePeriods: [Int] {
-        (1...maxPeriods).filter { !hiddenPeriods.contains($0) }
+        periodStore.periods.map { $0.number }.filter { !hiddenPeriods.contains($0) }
     }
     
     var dayNames: [String] {
@@ -169,6 +177,10 @@ class TimetableViewModel: ObservableObject {
         hiddenPeriods.contains(period)
     }
     
+    func getPeriodTime(for periodNumber: Int) -> String? {
+        periodStore.getPeriod(number: periodNumber)?.timeDisplay
+    }
+    
     // MARK: - Persistence
     
     private func loadHiddenPreferences() {
@@ -205,8 +217,8 @@ class TimetableViewModel: ObservableObject {
         // Hide Saturday (6) and Sunday (7)
         hiddenDays = [6, 7]
         
-        // Hide Period 6-12 (show only Period 1-5)
-        hiddenPeriods = [6, 7, 8, 9, 10, 11, 12]
+        // No periods hidden by default (PeriodStore will handle default 5 periods)
+        hiddenPeriods = []
         
         // Save defaults immediately
         saveHiddenPreferences()

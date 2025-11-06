@@ -11,11 +11,13 @@ struct TimetableCell: View {
     let subject: Subject?
     let isEmpty: Bool
     let showPeriodLabel: Bool
+    let periodTime: String?
     
-    init(subject: Subject? = nil, showPeriodLabel: Bool = false) {
+    init(subject: Subject? = nil, showPeriodLabel: Bool = false, periodTime: String? = nil) {
         self.subject = subject
         self.isEmpty = subject == nil
         self.showPeriodLabel = showPeriodLabel
+        self.periodTime = periodTime
     }
     
     var body: some View {
@@ -27,9 +29,13 @@ struct TimetableCell: View {
                     .lineLimit(2)
                     .minimumScaleFactor(0.8)
                 
-                // Show custom time if available, or period label if enabled
+                // Show custom time if available, or period time if available, or period label if enabled
                 if let customTime = subject.customTime, !customTime.isEmpty {
                     Text(customTime)
+                        .font(.system(size: 11))
+                        .foregroundColor(.white.opacity(0.9))
+                } else if let periodTime = periodTime {
+                    Text(periodTime)
                         .font(.system(size: 11))
                         .foregroundColor(.white.opacity(0.9))
                 } else if showPeriodLabel, let period = subject.period {
