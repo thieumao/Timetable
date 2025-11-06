@@ -27,6 +27,7 @@ class TimetableViewModel: ObservableObject {
     private let hiddenPeriodsKey = "timetable_hidden_periods"
     private let periodColumnHiddenKey = "timetable_period_column_hidden"
     private let showPeriodLabelKey = "timetable_show_period_label"
+    private let hasSetDefaultsKey = "timetable_has_set_defaults"
     
     // Expose store for dependency injection
     var store: ScheduleStore {
@@ -171,18 +172,44 @@ class TimetableViewModel: ObservableObject {
     // MARK: - Persistence
     
     private func loadHiddenPreferences() {
-        if let daysData = UserDefaults.standard.data(forKey: hiddenDaysKey),
-           let days = try? JSONDecoder().decode(Set<Int>.self, from: daysData) {
-            hiddenDays = days
-        }
+        let hasSetDefaults = UserDefaults.standard.bool(forKey: hasSetDefaultsKey)
         
-        if let periodsData = UserDefaults.standard.data(forKey: hiddenPeriodsKey),
-           let periods = try? JSONDecoder().decode(Set<Int>.self, from: periodsData) {
-            hiddenPeriods = periods
+        if !hasSetDefaults {
+            // First time opening app - set default values
+            setDefaultPreferences()
+            UserDefaults.standard.set(true, forKey: hasSetDefaultsKey)
+        } else {
+            // Load saved preferences
+            if let daysData = UserDefaults.standard.data(forKey: hiddenDaysKey),
+               let days = try? JSONDecoder().decode(Set<Int>.self, from: daysData) {
+                hiddenDays = days
+            }
+            
+            if let periodsData = UserDefaults.standard.data(forKey: hiddenPeriodsKey),
+               let periods = try? JSONDecoder().decode(Set<Int>.self, from: periodsData) {
+                hiddenPeriods = periods
+            }
+            
+            isPeriodColumnHidden = UserDefaults.standard.bool(forKey: periodColumnHiddenKey)
+            showPeriodLabel = UserDefaults.standard.bool(forKey: showPeriodLabelKey)
         }
+    }
+    
+    private func setDefaultPreferences() {
+        // Period column: hidden (false = hidden)
+        isPeriodColumnHidden = true
         
-        isPeriodColumnHidden = UserDefaults.standard.bool(forKey: periodColumnHiddenKey)
-        showPeriodLabel = UserDefaults.standard.bool(forKey: showPeriodLabelKey)
+        // Show Period Label: false
+        showPeriodLabel = false
+        
+        // Hide Saturday (6) and Sunday (7)
+        hiddenDays = [6, 7]
+        
+        // Hide Period 6-12 (show only Period 1-5)
+        hiddenPeriods = [6, 7, 8, 9, 10, 11, 12]
+        
+        // Save defaults immediately
+        saveHiddenPreferences()
     }
     
     private func saveHiddenPreferences() {
