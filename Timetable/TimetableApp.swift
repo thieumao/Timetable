@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct TimetableApp: App {
+    @StateObject private var localizationManager = LocalizationManager.shared
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(localizationManager)
         }
     }
 }
