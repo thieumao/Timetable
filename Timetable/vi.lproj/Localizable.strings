@@ -26,6 +26,7 @@
 "color" = "Màu sắc";
 "save" = "Lưu";
 "cancel" = "Hủy";
+"close" = "Đóng";
 "delete_subject" = "Xóa môn học";
 "other" = "Khác";
 "blue" = "Xanh dương";
@@ -38,3 +39,12 @@
 "indigo" = "Chàm";
 "subject_info" = "Thông tin môn học";
 "period_format" = "Tiết %d";
+"hide_column" = "Ẩn cột";
+"show_column" = "Hiện cột";
+"hide_row" = "Ẩn dòng";
+"show_row" = "Hiện dòng";
+"visibility_settings" = "Cài đặt hiển thị";
+"hide_day" = "Ẩn %@";
+"show_day" = "Hiện %@";
+"hide_period" = "Ẩn tiết %d";
+"show_period" = "Hiện tiết %d";

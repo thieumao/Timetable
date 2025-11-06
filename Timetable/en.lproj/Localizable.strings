@@ -26,6 +26,7 @@
 "color" = "Color";
 "save" = "Save";
 "cancel" = "Cancel";
+"close" = "Close";
 "delete_subject" = "Delete Subject";
 "other" = "Other";
 "blue" = "Blue";
@@ -38,3 +39,12 @@
 "indigo" = "Indigo";
 "subject_info" = "Subject Information";
 "period_format" = "Period %d";
+"hide_column" = "Hide Column";
+"show_column" = "Show Column";
+"hide_row" = "Hide Row";
+"show_row" = "Show Row";
+"visibility_settings" = "Visibility Settings";
+"hide_day" = "Hide %@";
+"show_day" = "Show %@";
+"hide_period" = "Hide Period %d";
+"show_period" = "Show Period %d";

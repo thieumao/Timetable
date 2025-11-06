@@ -10,6 +10,7 @@ import SwiftUI
 struct ContentView: View {
     @StateObject private var viewModel = TimetableViewModel()
     @ObservedObject private var localizationManager = LocalizationManager.shared
+    @State private var showingVisibilitySettings = false
     
     var body: some View {
         NavigationView {
@@ -18,34 +19,50 @@ struct ContentView: View {
                     // Header row with day names
                     HStack(spacing: 0) {
                         // Empty cell for period column
-                        Text("period".localized)
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                            .frame(width: 60)
-                            .padding(.vertical, 8)
+                        if !viewModel.isPeriodColumnHidden {
+                            Text("period".localized)
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                                .frame(width: 60)
+                                .padding(.vertical, 8)
+                        }
                         
-                        ForEach(Array(viewModel.daysOfWeek.enumerated()), id: \.offset) { index, day in
-                            Text(day)
+                        ForEach(viewModel.visibleDays, id: \.self) { day in
+                            Text(viewModel.getDayName(for: day))
                                 .font(.caption)
                                 .fontWeight(.semibold)
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 8)
+                                .contentShape(Rectangle())
+                                .onLongPressGesture {
+                                    withAnimation {
+                                        viewModel.toggleDayVisibility(day)
+                                    }
+                                }
                         }
                     }
                     .background(Color.gray.opacity(0.1))
                     
                     // Grid rows for each period
-                    ForEach(1...viewModel.maxPeriods, id: \.self) { period in
+                    ForEach(viewModel.visiblePeriods, id: \.self) { period in
                         HStack(spacing: 0) {
                             // Period indicator
-                            Text("\(period)")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .frame(width: 60)
-                                .padding(.vertical, 4)
+                            if !viewModel.isPeriodColumnHidden {
+                                Text("\(period)")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .frame(width: 60)
+                                    .padding(.vertical, 4)
+                                    .contentShape(Rectangle())
+                                    .onLongPressGesture {
+                                        withAnimation {
+                                            viewModel.togglePeriodVisibility(period)
+                                        }
+                                    }
+                            }
                             
                             // Day cells
-                            ForEach(1...7, id: \.self) { day in
+                            ForEach(viewModel.visibleDays, id: \.self) { day in
                                 let subjectsForCell = viewModel.getSubjects(for: day, period: period)
                                 
                                 if subjectsForCell.isEmpty {
@@ -86,13 +103,15 @@ struct ContentView: View {
                     let subjectsWithoutPeriod = viewModel.subjectsWithoutPeriod
                     if !subjectsWithoutPeriod.isEmpty {
                         HStack(spacing: 0) {
-                            Text("other".localized)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .frame(width: 60)
-                                .padding(.vertical, 4)
+                            if !viewModel.isPeriodColumnHidden {
+                                Text("other".localized)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .frame(width: 60)
+                                    .padding(.vertical, 4)
+                            }
                             
-                            ForEach(1...7, id: \.self) { day in
+                            ForEach(viewModel.visibleDays, id: \.self) { day in
                                 let subjectsForDay = subjectsWithoutPeriod.filter { $0.dayOfWeek == day }
                                 
                                 VStack(spacing: 2) {
@@ -120,6 +139,14 @@ struct ContentView: View {
             }
             .navigationTitle("timetable".localized)
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        showingVisibilitySettings = true
+                    } label: {
+                        Image(systemName: "eye.slash")
+                            .font(.title3)
+                    }
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         viewModel.showAddSubject()
@@ -128,6 +155,9 @@ struct ContentView: View {
                             .font(.title2)
                     }
                 }
+            }
+            .sheet(isPresented: $showingVisibilitySettings) {
+                VisibilitySettingsView(viewModel: viewModel)
             }
             .sheet(isPresented: $viewModel.showingAddSubject) {
                 SubjectEditView(
