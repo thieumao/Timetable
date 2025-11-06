@@ -45,24 +45,74 @@ class SubjectEditViewModel: ObservableObject {
         
         self.name = subject?.name ?? ""
         self.dayOfWeek = subject?.dayOfWeek ?? initialDay ?? 1
-        self.period = subject?.period ?? initialPeriod
+        
+        // Set period: use subject's period if editing, otherwise use initialPeriod, 
+        // or default to first available period if none specified
+        if let subjectPeriod = subject?.period {
+            self.period = subjectPeriod
+        } else if let initialPeriod = initialPeriod {
+            self.period = initialPeriod
+        } else {
+            // Default to first available period when adding new subject
+            let availablePeriods = periodStore.periods.sorted { $0.number < $1.number }
+            self.period = availablePeriods.first?.number
+        }
+        
         self.selectedColor = subject?.color ?? .blue
     }
     
     func saveSubject() {
-        let subject = Subject(
-            id: subjectToEdit?.id ?? UUID(),
-            name: name,
-            dayOfWeek: dayOfWeek,
-            period: period,
-            customTime: nil,
-            color: selectedColor
-        )
-        
         if let subjectToEdit = subjectToEdit {
+            // Editing existing subject - update it
+            let subject = Subject(
+                id: subjectToEdit.id,
+                name: name,
+                dayOfWeek: dayOfWeek,
+                period: period,
+                customTime: nil,
+                color: selectedColor
+            )
             scheduleStore.updateSubject(subject)
         } else {
-            scheduleStore.addSubject(subject)
+            // Creating new subject - check if there's an existing subject with same day and period
+            if let period = period {
+                // Check for existing subject with same day and period
+                let existingSubjects = scheduleStore.getSubjects(for: dayOfWeek, period: period)
+                if let existingSubject = existingSubjects.first {
+                    // Replace existing subject
+                    let updatedSubject = Subject(
+                        id: existingSubject.id,
+                        name: name,
+                        dayOfWeek: dayOfWeek,
+                        period: period,
+                        customTime: nil,
+                        color: selectedColor
+                    )
+                    scheduleStore.updateSubject(updatedSubject)
+                } else {
+                    // No existing subject - create new one
+                    let newSubject = Subject(
+                        id: UUID(),
+                        name: name,
+                        dayOfWeek: dayOfWeek,
+                        period: period,
+                        customTime: nil,
+                        color: selectedColor
+                    )
+                    scheduleStore.addSubject(newSubject)
+                }
+            } else {
+                // No period specified - create new subject
+                let newSubject = Subject(
+                    id: UUID(),
+                    name: name,
+                    dayOfWeek: dayOfWeek,
+                    period: period,
+                    customTime: nil,
+                    color: selectedColor
+                )
+                scheduleStore.addSubject(newSubject)
+            }
         }
     }
     
