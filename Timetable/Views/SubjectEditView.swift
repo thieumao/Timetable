@@ -38,19 +38,12 @@ struct SubjectEditView: View {
                     }
                 }
                 
-                Section(header: Text("time".localized)) {
-                    Toggle("use_custom_time".localized, isOn: $viewModel.useCustomTime)
-                    
-                    if viewModel.useCustomTime {
-                        TextField("custom_time_placeholder".localized, text: $viewModel.customTime)
-                            .keyboardType(.default)
-                    } else {
-                        Stepper(value: Binding(
-                            get: { viewModel.period ?? 1 },
-                            set: { viewModel.period = $0 }
-                        ), in: 1...12) {
-                            Text("period_label".localized.replacingOccurrences(of: "%d", with: "\(viewModel.period ?? 1)"))
-                        }
+                Section(header: Text("period".localized)) {
+                    Stepper(value: Binding(
+                        get: { viewModel.period ?? 1 },
+                        set: { viewModel.period = $0 }
+                    ), in: 1...12) {
+                        Text("period_label".localized.replacingOccurrences(of: "%d", with: "\(viewModel.period ?? 1)"))
                     }
                 }
                 
@@ -100,7 +93,6 @@ struct SubjectEditView: View {
                     .fontWeight(.semibold)
                 }
             }
-            .animation(.easeInOut(duration: 0.2), value: viewModel.useCustomTime)
         }
     }
 }

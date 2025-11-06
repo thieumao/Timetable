@@ -12,9 +12,7 @@ class SubjectEditViewModel: ObservableObject {
     @Published var name: String
     @Published var dayOfWeek: Int
     @Published var period: Int?
-    @Published var customTime: String
     @Published var selectedColor: SubjectColor
-    @Published var useCustomTime: Bool
     
     private let scheduleStore: ScheduleStore
     let subjectToEdit: Subject?
@@ -42,9 +40,7 @@ class SubjectEditViewModel: ObservableObject {
         self.name = subject?.name ?? ""
         self.dayOfWeek = subject?.dayOfWeek ?? initialDay ?? 1
         self.period = subject?.period ?? initialPeriod
-        self.customTime = subject?.customTime ?? ""
         self.selectedColor = subject?.color ?? .blue
-        self.useCustomTime = subject?.customTime != nil && !subject!.customTime!.isEmpty
     }
     
     func saveSubject() {
@@ -52,8 +48,8 @@ class SubjectEditViewModel: ObservableObject {
             id: subjectToEdit?.id ?? UUID(),
             name: name,
             dayOfWeek: dayOfWeek,
-            period: useCustomTime ? nil : period,
-            customTime: useCustomTime && !customTime.isEmpty ? customTime : nil,
+            period: period,
+            customTime: nil,
             color: selectedColor
         )
         
