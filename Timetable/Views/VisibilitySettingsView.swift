@@ -25,6 +25,17 @@ struct VisibilitySettingsView: View {
                     )) {
                         Text("period".localized)
                     }
+                    
+                    Toggle(isOn: Binding(
+                        get: { viewModel.showPeriodLabel },
+                        set: { _ in
+                            withAnimation {
+                                viewModel.showPeriodLabel.toggle()
+                            }
+                        }
+                    )) {
+                        Text("show_period_label".localized)
+                    }
                 }
                 
                 Section(header: Text("visibility_settings".localized)) {

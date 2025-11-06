@@ -17,6 +17,7 @@ class TimetableViewModel: ObservableObject {
     @Published var hiddenDays: Set<Int> = []
     @Published var hiddenPeriods: Set<Int> = []
     @Published var isPeriodColumnHidden: Bool = false
+    @Published var showPeriodLabel: Bool = false
     
     private let scheduleStore: ScheduleStore
     let maxPeriods = 12
@@ -25,6 +26,7 @@ class TimetableViewModel: ObservableObject {
     private let hiddenDaysKey = "timetable_hidden_days"
     private let hiddenPeriodsKey = "timetable_hidden_periods"
     private let periodColumnHiddenKey = "timetable_period_column_hidden"
+    private let showPeriodLabelKey = "timetable_show_period_label"
     
     // Expose store for dependency injection
     var store: ScheduleStore {
@@ -63,6 +65,12 @@ class TimetableViewModel: ObservableObject {
             .store(in: &cancellables)
         
         $isPeriodColumnHidden
+            .sink { [weak self] _ in
+                self?.saveHiddenPreferences()
+            }
+            .store(in: &cancellables)
+        
+        $showPeriodLabel
             .sink { [weak self] _ in
                 self?.saveHiddenPreferences()
             }
@@ -174,6 +182,7 @@ class TimetableViewModel: ObservableObject {
         }
         
         isPeriodColumnHidden = UserDefaults.standard.bool(forKey: periodColumnHiddenKey)
+        showPeriodLabel = UserDefaults.standard.bool(forKey: showPeriodLabelKey)
     }
     
     private func saveHiddenPreferences() {
@@ -186,5 +195,6 @@ class TimetableViewModel: ObservableObject {
         }
         
         UserDefaults.standard.set(isPeriodColumnHidden, forKey: periodColumnHiddenKey)
+        UserDefaults.standard.set(showPeriodLabel, forKey: showPeriodLabelKey)
     }
 }

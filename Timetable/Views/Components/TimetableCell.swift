@@ -10,10 +10,12 @@ import SwiftUI
 struct TimetableCell: View {
     let subject: Subject?
     let isEmpty: Bool
+    let showPeriodLabel: Bool
     
-    init(subject: Subject? = nil) {
+    init(subject: Subject? = nil, showPeriodLabel: Bool = false) {
         self.subject = subject
         self.isEmpty = subject == nil
+        self.showPeriodLabel = showPeriodLabel
     }
     
     var body: some View {
@@ -25,8 +27,13 @@ struct TimetableCell: View {
                     .lineLimit(2)
                     .minimumScaleFactor(0.8)
                 
-                if !subject.timeDisplay.isEmpty {
-                    Text(subject.timeDisplay)
+                // Show custom time if available, or period label if enabled
+                if let customTime = subject.customTime, !customTime.isEmpty {
+                    Text(customTime)
+                        .font(.system(size: 11))
+                        .foregroundColor(.white.opacity(0.9))
+                } else if showPeriodLabel, let period = subject.period {
+                    Text("period_format".localized.replacingOccurrences(of: "%d", with: "\(period)"))
                         .font(.system(size: 11))
                         .foregroundColor(.white.opacity(0.9))
                 }

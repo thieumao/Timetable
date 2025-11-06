@@ -48,3 +48,4 @@
 "show_day" = "Show %@";
 "hide_period" = "Hide Period %d";
 "show_period" = "Show Period %d";
+"show_period_label" = "Show Period Label";

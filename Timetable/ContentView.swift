@@ -66,7 +66,7 @@ struct ContentView: View {
                                 let subjectsForCell = viewModel.getSubjects(for: day, period: period)
                                 
                                 if subjectsForCell.isEmpty {
-                                    TimetableCell()
+                                    TimetableCell(showPeriodLabel: viewModel.showPeriodLabel)
                                         .frame(height: 60)
                                         .padding(.horizontal, 2)
                                         .padding(.vertical, 1)
@@ -79,7 +79,7 @@ struct ContentView: View {
                                 } else {
                                     VStack(spacing: 2) {
                                         ForEach(subjectsForCell) { subject in
-                                            TimetableCell(subject: subject)
+                                            TimetableCell(subject: subject, showPeriodLabel: viewModel.showPeriodLabel)
                                                 .frame(height: 60)
                                                 .contentShape(Rectangle())
                                                 .onTapGesture {
@@ -116,7 +116,7 @@ struct ContentView: View {
                                 
                                 VStack(spacing: 2) {
                                     ForEach(subjectsForDay) { subject in
-                                        TimetableCell(subject: subject)
+                                        TimetableCell(subject: subject, showPeriodLabel: viewModel.showPeriodLabel)
                                             .frame(height: 60)
                                             .contentShape(Rectangle())
                                             .onTapGesture {

@@ -48,3 +48,4 @@
 "show_day" = "Hiện %@";
 "hide_period" = "Ẩn tiết %d";
 "show_period" = "Hiện tiết %d";
+"show_period_label" = "Hiện nhãn tiết";
