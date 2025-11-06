@@ -21,10 +21,11 @@ struct ContentView: View {
                         // Empty cell for period column
                         if !viewModel.isPeriodColumnHidden {
                             Text("period".localized)
-                                .font(.caption)
-                                .fontWeight(.semibold)
-                                .frame(width: 60)
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(.primary)
+                                .frame(width: 70)
                                 .padding(.vertical, 8)
+                                .padding(.horizontal, 4)
                         }
                         
                         ForEach(viewModel.visibleDays, id: \.self) { day in
@@ -48,19 +49,23 @@ struct ContentView: View {
                         HStack(spacing: 0) {
                             // Period indicator
                             if !viewModel.isPeriodColumnHidden {
-                                VStack(alignment: .leading, spacing: 2) {
+                                VStack(alignment: .center, spacing: 4) {
                                     Text("\(period)")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
+                                        .font(.system(size: 15, weight: .semibold))
+                                        .foregroundColor(.primary)
                                     
                                     if let periodTime = viewModel.getPeriodTime(for: period) {
                                         Text(periodTime)
-                                            .font(.system(size: 9))
-                                            .foregroundColor(.secondary.opacity(0.7))
+                                            .font(.system(size: 11))
+                                            .foregroundColor(.secondary)
                                     }
                                 }
-                                .frame(width: 60)
-                                .padding(.vertical, 4)
+                                .frame(width: 70, height: 60)
+                                .padding(.horizontal, 4)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 6)
+                                        .fill(Color.gray.opacity(0.08))
+                                )
                                 .contentShape(Rectangle())
                                 .onLongPressGesture {
                                     withAnimation {
@@ -113,10 +118,15 @@ struct ContentView: View {
                         HStack(spacing: 0) {
                             if !viewModel.isPeriodColumnHidden {
                                 Text("other".localized)
-                                    .font(.caption)
+                                    .font(.system(size: 12, weight: .medium))
                                     .foregroundColor(.secondary)
-                                    .frame(width: 60)
-                                    .padding(.vertical, 4)
+                                    .frame(width: 70)
+                                    .padding(.vertical, 8)
+                                    .padding(.horizontal, 4)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .fill(Color.gray.opacity(0.08))
+                                    )
                             }
                             
                             ForEach(viewModel.visibleDays, id: \.self) { day in
