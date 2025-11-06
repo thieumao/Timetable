@@ -27,17 +27,6 @@ struct VisibilitySettingsView: View {
                         Text("period".localized)
                     }
                     
-                    Toggle(isOn: Binding(
-                        get: { viewModel.showPeriodLabel },
-                        set: { _ in
-                            withAnimation {
-                                viewModel.showPeriodLabel.toggle()
-                            }
-                        }
-                    )) {
-                        Text("show_period_label".localized)
-                    }
-                    
                     Button(action: {
                         showingPeriodSettings = true
                     }) {
