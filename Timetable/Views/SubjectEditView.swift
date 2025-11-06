@@ -9,41 +9,25 @@ import SwiftUI
 
 struct SubjectEditView: View {
     @Environment(\.dismiss) var dismiss
-    @ObservedObject var store: ScheduleStore
+    @StateObject private var viewModel: SubjectEditViewModel
     @ObservedObject private var localizationManager = LocalizationManager.shared
     
-    @State private var name: String
-    @State private var dayOfWeek: Int
-    @State private var period: Int?
-    @State private var customTime: String
-    @State private var selectedColor: SubjectColor
-    @State private var useCustomTime: Bool
-    
-    let subjectToEdit: Subject?
-    let initialDay: Int?
-    let initialPeriod: Int?
-    
-    init(store: ScheduleStore, subject: Subject? = nil, initialDay: Int? = nil, initialPeriod: Int? = nil) {
-        self.store = store
-        self.subjectToEdit = subject
-        self.initialDay = initialDay
-        self.initialPeriod = initialPeriod
-        
-        _name = State(initialValue: subject?.name ?? "")
-        _dayOfWeek = State(initialValue: subject?.dayOfWeek ?? initialDay ?? 1)
-        _period = State(initialValue: subject?.period ?? initialPeriod)
-        _customTime = State(initialValue: subject?.customTime ?? "")
-        _selectedColor = State(initialValue: subject?.color ?? .blue)
-        _useCustomTime = State(initialValue: subject?.customTime != nil && !subject!.customTime!.isEmpty)
+    init(scheduleStore: ScheduleStore, subject: Subject? = nil, initialDay: Int? = nil, initialPeriod: Int? = nil) {
+        _viewModel = StateObject(wrappedValue: SubjectEditViewModel(
+            scheduleStore: scheduleStore,
+            subject: subject,
+            initialDay: initialDay,
+            initialPeriod: initialPeriod
+        ))
     }
     
     var body: some View {
         NavigationView {
             Form {
                 Section(header: Text("subject_info".localized)) {
-                    TextField("subject_name".localized, text: $name)
+                    TextField("subject_name".localized, text: $viewModel.name)
                     
-                    Picker("day".localized, selection: $dayOfWeek) {
+                    Picker("day".localized, selection: $viewModel.dayOfWeek) {
                         Text("monday".localized).tag(1)
                         Text("tuesday".localized).tag(2)
                         Text("wednesday".localized).tag(3)
@@ -55,23 +39,23 @@ struct SubjectEditView: View {
                 }
                 
                 Section(header: Text("time".localized)) {
-                    Toggle("use_custom_time".localized, isOn: $useCustomTime)
+                    Toggle("use_custom_time".localized, isOn: $viewModel.useCustomTime)
                     
-                    if useCustomTime {
-                        TextField("custom_time_placeholder".localized, text: $customTime)
+                    if viewModel.useCustomTime {
+                        TextField("custom_time_placeholder".localized, text: $viewModel.customTime)
                             .keyboardType(.default)
                     } else {
                         Stepper(value: Binding(
-                            get: { period ?? 1 },
-                            set: { period = $0 }
+                            get: { viewModel.period ?? 1 },
+                            set: { viewModel.period = $0 }
                         ), in: 1...12) {
-                            Text("period_label".localized.replacingOccurrences(of: "%d", with: "\(period ?? 1)"))
+                            Text("period_label".localized.replacingOccurrences(of: "%d", with: "\(viewModel.period ?? 1)"))
                         }
                     }
                 }
                 
                 Section(header: Text("color".localized)) {
-                    Picker("color".localized, selection: $selectedColor) {
+                    Picker("color".localized, selection: $viewModel.selectedColor) {
                         ForEach(SubjectColor.allCases, id: \.self) { color in
                             HStack {
                                 Circle()
@@ -84,13 +68,11 @@ struct SubjectEditView: View {
                     }
                 }
                 
-                if subjectToEdit != nil {
+                if viewModel.isEditMode {
                     Section {
                         Button(role: .destructive) {
-                            if let subject = subjectToEdit {
-                                store.deleteSubject(subject)
-                                dismiss()
-                            }
+                            viewModel.deleteSubject()
+                            dismiss()
                         } label: {
                             HStack {
                                 Spacer()
@@ -101,7 +83,7 @@ struct SubjectEditView: View {
                     }
                 }
             }
-            .navigationTitle(subjectToEdit == nil ? "add_subject".localized : "edit_subject".localized)
+            .navigationTitle(viewModel.navigationTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -111,32 +93,14 @@ struct SubjectEditView: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("save".localized) {
-                        saveSubject()
+                        viewModel.saveSubject()
+                        dismiss()
                     }
-                    .disabled(name.isEmpty)
+                    .disabled(!viewModel.isSaveEnabled)
                     .fontWeight(.semibold)
                 }
             }
-            .animation(.easeInOut(duration: 0.2), value: useCustomTime)
+            .animation(.easeInOut(duration: 0.2), value: viewModel.useCustomTime)
         }
-    }
-    
-    private func saveSubject() {
-        let subject = Subject(
-            id: subjectToEdit?.id ?? UUID(),
-            name: name,
-            dayOfWeek: dayOfWeek,
-            period: useCustomTime ? nil : period,
-            customTime: useCustomTime && !customTime.isEmpty ? customTime : nil,
-            color: selectedColor
-        )
-        
-        if subjectToEdit != nil {
-            store.updateSubject(subject)
-        } else {
-            store.addSubject(subject)
-        }
-        
-        dismiss()
     }
 }

@@ -8,26 +8,8 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var store = ScheduleStore()
+    @StateObject private var viewModel = TimetableViewModel()
     @ObservedObject private var localizationManager = LocalizationManager.shared
-    @State private var showingAddSubject = false
-    @State private var selectedSubject: Subject?
-    @State private var initialDayForNewSubject: Int?
-    @State private var initialPeriodForNewSubject: Int?
-    
-    let maxPeriods = 12
-    
-    var daysOfWeek: [String] {
-        [
-            "monday_short".localized,
-            "tuesday_short".localized,
-            "wednesday_short".localized,
-            "thursday_short".localized,
-            "friday_short".localized,
-            "saturday_short".localized,
-            "sunday_short".localized
-        ]
-    }
     
     var body: some View {
         NavigationView {
@@ -42,7 +24,7 @@ struct ContentView: View {
                             .frame(width: 60)
                             .padding(.vertical, 8)
                         
-                        ForEach(Array(daysOfWeek.enumerated()), id: \.offset) { index, day in
+                        ForEach(Array(viewModel.daysOfWeek.enumerated()), id: \.offset) { index, day in
                             Text(day)
                                 .font(.caption)
                                 .fontWeight(.semibold)
@@ -53,7 +35,7 @@ struct ContentView: View {
                     .background(Color.gray.opacity(0.1))
                     
                     // Grid rows for each period
-                    ForEach(1...maxPeriods, id: \.self) { period in
+                    ForEach(1...viewModel.maxPeriods, id: \.self) { period in
                         HStack(spacing: 0) {
                             // Period indicator
                             Text("\(period)")
@@ -64,7 +46,7 @@ struct ContentView: View {
                             
                             // Day cells
                             ForEach(1...7, id: \.self) { day in
-                                let subjectsForCell = store.getSubjects(for: day, period: period)
+                                let subjectsForCell = viewModel.getSubjects(for: day, period: period)
                                 
                                 if subjectsForCell.isEmpty {
                                     TimetableCell()
@@ -74,7 +56,7 @@ struct ContentView: View {
                                         .contentShape(Rectangle())
                                         .onTapGesture {
                                             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                                addSubjectForDay(day, period: period)
+                                                viewModel.addSubjectForDay(day, period: period)
                                             }
                                         }
                                 } else {
@@ -85,7 +67,7 @@ struct ContentView: View {
                                                 .contentShape(Rectangle())
                                                 .onTapGesture {
                                                     withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                                        selectedSubject = subject
+                                                        viewModel.selectSubject(subject)
                                                     }
                                                 }
                                         }
@@ -101,7 +83,7 @@ struct ContentView: View {
                     }
                     
                     // Empty cells for subjects without period
-                    let subjectsWithoutPeriod = store.subjects.filter { $0.period == nil }
+                    let subjectsWithoutPeriod = viewModel.subjectsWithoutPeriod
                     if !subjectsWithoutPeriod.isEmpty {
                         HStack(spacing: 0) {
                             Text("other".localized)
@@ -120,7 +102,7 @@ struct ContentView: View {
                                             .contentShape(Rectangle())
                                             .onTapGesture {
                                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                                    selectedSubject = subject
+                                                    viewModel.selectSubject(subject)
                                                 }
                                             }
                                     }
@@ -140,34 +122,33 @@ struct ContentView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
-                        showingAddSubject = true
+                        viewModel.showAddSubject()
                     } label: {
                         Image(systemName: "plus.circle.fill")
                             .font(.title2)
                     }
                 }
             }
-            .sheet(isPresented: $showingAddSubject) {
+            .sheet(isPresented: $viewModel.showingAddSubject) {
                 SubjectEditView(
-                    store: store,
-                    initialDay: initialDayForNewSubject,
-                    initialPeriod: initialPeriodForNewSubject
+                    scheduleStore: viewModel.store,
+                    initialDay: viewModel.initialDayForNewSubject,
+                    initialPeriod: viewModel.initialPeriodForNewSubject
                 )
                 .onDisappear {
-                    initialDayForNewSubject = nil
-                    initialPeriodForNewSubject = nil
+                    viewModel.dismissAddSubject()
                 }
             }
-            .sheet(item: $selectedSubject) { subject in
-                SubjectEditView(store: store, subject: subject)
+            .sheet(item: $viewModel.selectedSubject) { subject in
+                SubjectEditView(
+                    scheduleStore: viewModel.store,
+                    subject: subject
+                )
+                .onDisappear {
+                    viewModel.dismissEditSubject()
+                }
             }
         }
-    }
-    
-    private func addSubjectForDay(_ day: Int, period: Int) {
-        initialDayForNewSubject = day
-        initialPeriodForNewSubject = period
-        showingAddSubject = true
     }
 }
 
